@@ -1,0 +1,14 @@
+{
+  "name": "bluebox",
+  "version": "0.0.1",
+  "description": "Web Bluetooth and Thingy52",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lars Knudsen",
+  "license": "MIT",
+  "dependencies": {
+    "thingy52_web_bluetooth": "^1.4.1"
+  }
+}

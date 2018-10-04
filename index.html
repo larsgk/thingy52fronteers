@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Web Bluetooth and Thingy:52</title>
+    <style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: #D8BAFF;
+        color: #7760FF;
+        font-weight: bold;
+        font-size: 150%;
+        font-family: sans-serif;
+        text-align: center;
+    }
+    #blobpos {
+        position: fixed;
+        left:0;
+        top:0;
+        transform: translate(50vw, 50vh);
+    }
+    #blob {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 200px;
+        height: 200px;
+        left: -100px;
+        top: -100px;
+        background: #FFFF90;
+        transform: scale(0.1);
+        transition: transform 100ms ease-out;
+        border-radius: 50%;
+        border: 3px solid black;
+        box-shadow: 5px 5px 10px rgba(20,20,20,0.5);
+    }
+    h3 {
+      margin: 0;
+      text-shadow:
+        -1px -1px 2px #000,
+        1px -1px 2px #000,
+        -1px 1px 2px #000,
+        1px 1px 2px #000;  
+    }
+    </style>
+  </head>
+  <body>
+    <button id="connectBtn">Connect</button>
+    <button id="disconnectBtn">Disconnect</button>
+
+    <h3>Web Bluetooth and Thingy:52</h3>
+    
+    <div id="blobpos"><div id="blob"><span id="temperature">0 C</span></div></div>
+    
+    <script type="module">
+
+      import Thingy from "./node_modules/thingy52_web_bluetooth/index.js";
+      const thingy = new Thingy();
+      
+      const myTemperature = data => {
+        const tempData = data.detail;
+        const label = document.querySelector("#temperature");
+        label.innerHTML = `${tempData.value} C`;
+        console.log(tempData);
+      }
+
+      const myGravity = data => {
+        const gravityData = data.detail;
+        const blobpos = document.querySelector("#blobpos");
+        const xpos = (50+(gravityData.value.y*5));
+        const ypos = (50-(gravityData.value.x*5));
+        blobpos.style.transform = `translate(${xpos}vw, ${ypos}vh)`;
+      }
+      
+      const myButton = data => {
+        const button = data.detail;
+        const blob = document.querySelector("#blob");
+        blob.style.transform = `scale(${button.value ? 1.5 : 1})`;
+      }
+
+      async function start(device) {
+        try {
+          await device.connect();
+          device.addEventListener("temperature", myTemperature);
+          device.addEventListener("gravityvector", myGravity);
+          device.addEventListener("button", myButton);
+
+          await device.temperature.start();
+          await device.gravityvector.start();
+          await device.button.start();
+          const blob = document.querySelector("#blob");
+          blob.style.transform = `scale(1)`;
+          } catch (error) {
+          console.error(error);
+        }
+      }
+
+      document.querySelector("#connectBtn").addEventListener("click", async () => {
+        await start(thingy);
+        console.log("Connected");
+      });
+      
+      document.querySelector("#disconnectBtn").addEventListener("click", async () => {
+        await thingy.disconnect();
+        console.log("Disconnected");
+      });
+    </script>
+  </body>
+</html>
